@@ -19,12 +19,6 @@ pipeline {
       }
     }
 
-    stage('Build') {
-      steps {
-        sh 'mvn -DskipTests package'
-      }
-    }
-
     stage('Docker Build') {
       steps {
         sh 'docker build -t $IMAGE_NAME:latest .'
@@ -55,7 +49,7 @@ pipeline {
 
   post {
     always {
-      archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
+      sh 'docker image ls $IMAGE_NAME:latest || true'
     }
   }
 }
