@@ -36,6 +36,10 @@ public class DataLoader implements CommandLineRunner {
 
   @Override
   public void run(String... args) {
+    if (userRepo.findByUsername("admin").isPresent()) {
+      return;
+    }
+
     User admin = userRepo.save(new User("admin", "admin123", "Anaya Rao", Role.ADMIN));
     User dev = userRepo.save(new User("dev", "dev123", "Rohan Mehta", Role.DEV));
     User tester = userRepo.save(new User("tester", "tester123", "Mira Sen", Role.TESTER));
