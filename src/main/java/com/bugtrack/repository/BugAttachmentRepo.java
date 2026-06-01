@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BugAttachmentRepo extends JpaRepository<BugAttachment, Long> {
   List<BugAttachment> findByBugIdOrderByCreatedAtDesc(Long bugId);
+  void deleteByBugId(Long bugId);
 }

@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CommentRepo extends JpaRepository<Comment, Long> {
   List<Comment> findByBugIdOrderByCreatedAtAsc(Long bugId);
+  void deleteByBugId(Long bugId);
 }

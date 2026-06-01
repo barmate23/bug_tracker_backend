@@ -17,6 +17,7 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -79,6 +80,16 @@ public class AttachmentController {
         .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + attachment.getFileName() + "\"")
         .contentType(MediaType.parseMediaType(attachment.getContentType()))
         .body(attachment.getData());
+  }
+
+  @DeleteMapping("/{attachmentId}")
+  public ApiResponse<Void> delete(@PathVariable Long bugId, @PathVariable Long attachmentId, HttpSession session) {
+    loadAccessibleBug(bugId, authService.current(session));
+    BugAttachment attachment = attachmentRepo.findById(attachmentId)
+        .filter(found -> found.getBug().getId().equals(bugId))
+        .orElseThrow(() -> new EntityNotFoundException("Attachment not found"));
+    attachmentRepo.delete(attachment);
+    return ApiResponse.ok(null, "Image deleted");
   }
 
   private Bug loadAccessibleBug(Long bugId, SessionUser current) {

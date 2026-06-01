@@ -7,17 +7,18 @@ import com.bugtrack.model.Bug;
 import com.bugtrack.model.BugStatus;
 import com.bugtrack.model.Priority;
 import com.bugtrack.model.Project;
-import com.bugtrack.model.Role;
 import com.bugtrack.model.User;
+import com.bugtrack.repository.BugAttachmentRepo;
 import com.bugtrack.repository.BugRepo;
+import com.bugtrack.repository.CommentRepo;
 import com.bugtrack.repository.ProjectRepo;
 import com.bugtrack.repository.UserRepo;
 import com.bugtrack.service.AccessService;
 import com.bugtrack.service.AuthService;
-import com.bugtrack.service.ForbiddenException;
 import com.bugtrack.service.SessionUser;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.List;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,14 +35,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class BugController {
   private final BugRepo bugRepo;
+  private final BugAttachmentRepo attachmentRepo;
+  private final CommentRepo commentRepo;
   private final ProjectRepo projectRepo;
   private final UserRepo userRepo;
   private final AuthService authService;
   private final AccessService accessService;
 
-  public BugController(BugRepo bugRepo, ProjectRepo projectRepo, UserRepo userRepo, AuthService authService,
-      AccessService accessService) {
+  public BugController(BugRepo bugRepo, BugAttachmentRepo attachmentRepo, CommentRepo commentRepo,
+      ProjectRepo projectRepo, UserRepo userRepo, AuthService authService, AccessService accessService) {
     this.bugRepo = bugRepo;
+    this.attachmentRepo = attachmentRepo;
+    this.commentRepo = commentRepo;
     this.projectRepo = projectRepo;
     this.userRepo = userRepo;
     this.authService = authService;
@@ -89,20 +94,18 @@ public class BugController {
   public ApiResponse<BugDto> update(@PathVariable Long bugId, @RequestBody BugRequest request, HttpSession session) {
     SessionUser current = authService.current(session);
     Bug bug = loadAccessibleBug(bugId, current);
-    boolean statusChanged = request.status() != null && request.status() != bug.getStatus();
-    if (statusChanged && current.role() != Role.ADMIN
-        && (bug.getAssignedTo() == null || !bug.getAssignedTo().getId().equals(current.userId()))) {
-      throw new ForbiddenException("Only the assignee or an admin can update status");
-    }
     applyRequest(bug, request);
     bug.setUpdatedAt(Instant.now());
     return ApiResponse.ok(BugDto.from(bugRepo.save(bug)), "Bug updated");
   }
 
   @DeleteMapping("/bugs/{bugId}")
+  @Transactional
   public ApiResponse<Void> delete(@PathVariable Long bugId, HttpSession session) {
-    accessService.requireAdmin(authService.current(session));
-    bugRepo.deleteById(bugId);
+    Bug bug = loadAccessibleBug(bugId, authService.current(session));
+    attachmentRepo.deleteByBugId(bug.getId());
+    commentRepo.deleteByBugId(bug.getId());
+    bugRepo.delete(bug);
     return ApiResponse.ok(null, "Bug deleted");
   }
 

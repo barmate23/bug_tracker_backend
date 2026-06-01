@@ -13,7 +13,7 @@ services:
       SERVER_SERVLET_SESSION_COOKIE_SAME_SITE: none
       SERVER_SERVLET_SESSION_COOKIE_SECURE: "true"
     ports:
-      - "9099:9099"
+      - "9099:8080"
     networks:
       app_network:
         aliases:
