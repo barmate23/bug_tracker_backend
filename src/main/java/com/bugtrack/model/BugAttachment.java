@@ -33,7 +33,7 @@ public class BugAttachment {
   private Long sizeBytes;
 
   @Lob
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "LONGBLOB")
   private byte[] data;
 
   @Column(nullable = false)
