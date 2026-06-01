@@ -9,7 +9,7 @@ pipeline {
     MYSQL_SCHEMA = 'bug_tracker'
     MYSQL_USER = 'root'
     MYSQL_PASSWORD = 'root'
-    APP_CORS_ALLOWED_ORIGINS = 'http://localhost:3000,http://127.0.0.1:3000,http://*:3000'
+    APP_CORS_ALLOWED_ORIGINS = 'http://localhost:3000,http://127.0.0.1:3000,http://*:3000,https://*.sarvosmi.io'
   }
 
   stages {
