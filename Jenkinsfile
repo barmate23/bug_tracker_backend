@@ -21,35 +21,27 @@ pipeline {
 
     stage('Docker Build') {
       steps {
-        sh 'docker build -t $IMAGE_NAME:latest .'
+        sh 'docker build --no-cache -t $IMAGE_NAME:latest .'
       }
     }
 
     stage('Deploy') {
       steps {
-        sh '''
-          docker network inspect "$DOCKER_NETWORK" >/dev/null
-          docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
-          docker run -d \
-            --name "$CONTAINER_NAME" \
-            --restart unless-stopped \
-            --network "$DOCKER_NETWORK" \
-            -p 8080:8080 \
-            -e SPRING_DATASOURCE_URL="jdbc:mysql://$MYSQL_HOST:3306/$MYSQL_SCHEMA?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true" \
-            -e SPRING_DATASOURCE_DRIVER="com.mysql.cj.jdbc.Driver" \
-            -e SPRING_DATASOURCE_USERNAME="$MYSQL_USER" \
-            -e SPRING_DATASOURCE_PASSWORD="$MYSQL_PASSWORD" \
-            -e SPRING_JPA_HIBERNATE_DDL_AUTO="update" \
-            -e APP_CORS_ALLOWED_ORIGINS="$APP_CORS_ALLOWED_ORIGINS" \
-            "$IMAGE_NAME:latest"
-        '''
+        sh 'docker-compose down || true'
+        sh 'docker-compose up -d'
       }
     }
   }
 
   post {
     always {
-      sh 'docker image ls $IMAGE_NAME:latest || true'
+      cleanWs()
+    }
+    success {
+      echo 'Backend deployment successful!'
+    }
+    failure {
+      echo 'Backend deployment failed. Please check the logs.'
     }
   }
 }
