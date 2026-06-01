@@ -10,6 +10,7 @@ pipeline {
     MYSQL_USER = 'root'
     MYSQL_PASSWORD = 'root'
     APP_CORS_ALLOWED_ORIGINS = 'http://localhost:3000,http://127.0.0.1:3000,http://*:3000,https://*.sarvosmi.io'
+    DOCKER_BUILDKIT = '1'
   }
 
   stages {
@@ -21,7 +22,7 @@ pipeline {
 
     stage('Docker Build') {
       steps {
-        sh 'docker build --no-cache -t $IMAGE_NAME:latest .'
+        sh 'docker build -t $IMAGE_NAME:latest .'
       }
     }
 
