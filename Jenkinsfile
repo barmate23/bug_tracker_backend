@@ -28,6 +28,7 @@ pipeline {
     stage('Deploy') {
       steps {
         sh 'docker-compose down || true'
+        sh 'docker rm -f $CONTAINER_NAME || true'
         sh 'docker-compose up -d'
       }
     }
