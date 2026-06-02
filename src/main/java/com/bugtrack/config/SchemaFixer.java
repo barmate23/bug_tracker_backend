@@ -1,6 +1,7 @@
 package com.bugtrack.config;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +15,8 @@ public class SchemaFixer implements CommandLineRunner {
 
   @Override
   public void run(String... args) {
-    String databaseProduct = jdbcTemplate.execute(connection -> connection.getMetaData().getDatabaseProductName());
+    String databaseProduct = jdbcTemplate.execute(
+        (ConnectionCallback<String>) connection -> connection.getMetaData().getDatabaseProductName());
     if (!"MySQL".equalsIgnoreCase(databaseProduct)) {
       return;
     }
